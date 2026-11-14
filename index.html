@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Мята — дневник здоровья</title>
+<meta name="theme-color" content="#F3F8F1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Мята">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+:root{
+  --bg:#F3F8F1; --card:#fff; --ink:#1F3A2B; --ink2:#5E7A6A; --line:#E3EDE2;
+  --mint:#5FAE7B; --mint-d:#2E6B4A; --mint-l:#DDF1E3; --mint-xl:#EEF8F0;
+  --ok:#4E9F6E; --ok-bg:#DDF1E3;
+  --warn:#D99A2B; --warn-bg:#FFF1D2;
+  --bad:#D9576B; --bad-bg:#FFDFE3;
+  --f:#4E9F6E; --b:#F09A7B; --l:#6DA7D8; --d:#A58BD6;
+  --shadow:0 6px 24px rgba(46,107,74,.10);
+  --r:22px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
+  font-family:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+#app{max-width:520px;margin:0 auto;min-height:100%;position:relative;
+  padding:calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 104px)}
+.bgblob{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(420px 260px at 85% -40px,#DDF3E4 0,transparent 70%),radial-gradient(380px 260px at -10% 30%,#FDEFE6 0,transparent 70%)}
+#app>*{position:relative;z-index:1}
+h1{font-size:26px;margin:0;letter-spacing:-.3px}
+h2{font-size:18px;margin:0 0 10px}
+.sub{color:var(--ink2);font-size:14px}
+header.top{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 16px}
+.avatar{width:44px;height:44px;border-radius:16px;background:linear-gradient(160deg,#9ADBB0,#4E9F6E);display:grid;place-items:center;font-size:22px;box-shadow:var(--shadow)}
+.view{display:none;animation:fade .25s ease}
+.view.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.card{background:var(--card);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+.between{justify-content:space-between}
+.hero{background:linear-gradient(150deg,#9ADBB0 0%,#5FAE7B 60%,#3E8F61 100%);color:#fff;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.14)}
+.hero .sub{color:rgba(255,255,255,.88)}
+.ring{width:84px;height:84px;flex:none;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:20px}
+.btn{padding:13px 18px;border-radius:16px;font-weight:700;background:var(--mint);color:#fff;box-shadow:0 6px 14px rgba(95,174,123,.35);transition:transform .12s}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:var(--mint-l);color:var(--mint-d);box-shadow:none}
+.btn.white{background:#fff;color:var(--mint-d);box-shadow:none}
+.btn.danger{background:var(--bad-bg);color:var(--bad);box-shadow:none}
+.btn.sm{padding:9px 14px;border-radius:14px;font-size:14px}
+.btn.block{display:block;width:100%}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:8px 14px;border-radius:999px;background:#fff;border:1.5px solid var(--line);font-weight:600;font-size:14px;color:var(--ink2)}
+.chip.on{background:var(--mint);border-color:var(--mint);color:#fff}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.slot{background:var(--card);border-radius:20px;padding:12px 14px;box-shadow:var(--shadow);text-align:left;border:2px solid transparent;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;width:100%}
+.slot .em{font-size:20px}
+.slot .nm{font-size:13px;color:var(--ink2);font-weight:600;margin-top:2px}
+.slot .vals{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-content:flex-start}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;font-weight:800;font-size:14px;background:#F0F3F0;color:var(--ink2)}
+.pill.s0{background:var(--ok-bg);color:var(--ok)}
+.pill.s1{background:var(--warn-bg);color:var(--warn)}
+.pill.s2{background:var(--bad-bg);color:var(--bad)}
+.pill.none{background:#F0F3F0;color:#9AB0A2;font-weight:600}
+.dots7{display:flex;justify-content:space-between;gap:6px}
+.d7{flex:1;text-align:center;font-size:12px;color:var(--ink2);font-weight:600}
+.d7 i{display:block;width:100%;aspect-ratio:1;max-width:40px;margin:0 auto 4px;border-radius:14px;background:#EEF3EE;display:grid;place-items:center;font-style:normal;font-size:15px;font-weight:800;color:#fff}
+.d7 i.s0{background:var(--ok)} .d7 i.s1{background:#F2B34C} .d7 i.s2{background:var(--bad)}
+.d7.today i{outline:3px solid var(--mint-l)}
+/* calendar */
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.calhead b{font-size:19px}
+.icb{width:40px;height:40px;border-radius:14px;background:var(--mint-xl);color:var(--mint-d);font-size:20px;font-weight:800;display:grid;place-items:center}
+.wk,.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.wk span{text-align:center;font-size:12px;color:var(--ink2);font-weight:700;padding-bottom:4px}
+.cell{aspect-ratio:1/1.08;border-radius:15px;background:#F6FAF5;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-weight:700;font-size:15px;border:2px solid transparent}
+.cell.out{visibility:hidden}
+.cell.s0{background:var(--ok-bg)} .cell.s1{background:var(--warn-bg)} .cell.s2{background:var(--bad-bg)}
+.cell.today{border-color:var(--mint)}
+.cell.sel{box-shadow:0 0 0 3px rgba(95,174,123,.35)}
+.cell.future{opacity:.45}
+.cd{display:flex;gap:2px;height:6px}
+.cd u{width:5px;height:5px;border-radius:50%;background:#CFDDD2;display:block}
+.cd u.s0{background:var(--ok)} .cd u.s1{background:#F2B34C} .cd u.s2{background:var(--bad)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);margin-top:12px}
+.legend span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px;background:var(--c)}
+/* stats */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi{background:#fff;border-radius:20px;padding:14px;box-shadow:var(--shadow)}
+.kpi .k{font-size:12.5px;color:var(--ink2);font-weight:700}
+.kpi .v{font-size:26px;font-weight:800;margin-top:4px;letter-spacing:-.5px}
+.kpi .u{font-size:13px;color:var(--ink2);font-weight:600}
+.kpi.s0 .v{color:var(--ok)} .kpi.s1 .v{color:var(--warn)} .kpi.s2 .v{color:var(--bad)}
+.leg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.lg{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;font-size:13px;font-weight:700;background:#F3F7F3;color:var(--ink2)}
+.lg:before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c)}
+.lg.off{opacity:.4;text-decoration:line-through}
+svg.chart{width:100%;height:auto;display:block}
+.note{background:var(--mint-xl);border-radius:16px;padding:12px 14px;font-size:14px;color:var(--mint-d);font-weight:600}
+/* settings */
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.field:last-child{border:0}
+.field label{font-weight:600;font-size:15px}
+.field small{display:block;color:var(--ink2);font-weight:500;font-size:12.5px}
+input.in{width:100%;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:#fff;font-size:17px;font-weight:700;outline:none;transition:border .15s,background .15s}
+input.in:focus{border-color:var(--mint)}
+input.sm{width:84px;text-align:center;padding:9px}
+input.time{width:auto;padding:8px 10px;font-size:16px}
+.sw{position:relative;width:50px;height:30px;border-radius:999px;background:#D5E0D7;flex:none;transition:background .2s}
+.sw:after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);transition:left .2s}
+.sw.on{background:var(--mint)} .sw.on:after{left:23px}
+/* nav */
+nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 10px);width:min(496px,calc(100% - 24px));
+  background:rgba(255,255,255,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:28px;box-shadow:0 10px 34px rgba(46,107,74,.22);
+  display:flex;align-items:center;justify-content:space-around;padding:8px 6px;z-index:20}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:#8CA395;padding:6px 0;border-radius:18px}
+nav button span{font-size:22px;filter:grayscale(1) opacity(.7);transition:.15s}
+nav button.on{color:var(--mint-d)} nav button.on span{filter:none;transform:translateY(-1px) scale(1.1)}
+nav .fab{flex:none;width:58px;height:58px;border-radius:20px;margin:-26px 6px 0;background:linear-gradient(150deg,#7BC896,#4E9F6E);color:#fff;font-size:32px;font-weight:400;box-shadow:0 10px 20px rgba(78,159,110,.45);display:grid;place-items:center;padding:0}
+/* sheet */
+#back{position:fixed;inset:0;background:rgba(20,50,35,.38);opacity:0;pointer-events:none;transition:opacity .2s;z-index:40}
+#back.on{opacity:1;pointer-events:auto}
+#sheet{position:fixed;left:50%;bottom:0;width:min(520px,100%);max-height:92vh;overflow:auto;transform:translate(-50%,105%);transition:transform .3s cubic-bezier(.2,.9,.3,1);
+  background:#FAFDF9;border-radius:28px 28px 0 0;padding:10px 16px calc(env(safe-area-inset-bottom) + 18px);z-index:50;box-shadow:0 -10px 40px rgba(0,0,0,.18)}
+#sheet.on{transform:translate(-50%,0)}
+.grab{width:44px;height:5px;border-radius:9px;background:#CFDDD2;margin:0 auto 12px}
+.daynav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.daynav b{font-size:18px;text-align:center}
+.eslot{background:#fff;border-radius:20px;padding:12px;margin-bottom:10px;box-shadow:0 3px 12px rgba(46,107,74,.07);border:2px solid transparent}
+.eslot.focus{border-color:var(--mint)}
+.eslot h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px}
+.eg{display:grid;grid-template-columns:1.1fr 1.4fr;gap:10px}
+.eg label{font-size:11.5px;color:var(--ink2);font-weight:700;display:block;margin-bottom:4px}
+.bp{display:flex;align-items:center;gap:4px}
+.bp i{font-style:normal;font-weight:800;color:var(--ink2)}
+input.in.s0{border-color:#9ED5B3;background:#F2FBF5} input.in.s1{border-color:#F2C46E;background:#FFF8E6} input.in.s2{border-color:#EE8E9D;background:#FFF0F2}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);transform:translate(-50%,-90px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:16px;font-weight:700;font-size:14px;z-index:99;transition:transform .3s;box-shadow:0 10px 30px rgba(0,0,0,.25);max-width:90%;text-align:center}
+#toast.on{transform:translate(-50%,0)}
+.step{display:flex;gap:12px;align-items:flex-start;margin:10px 0}
+.step b.n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--mint);color:#fff;display:grid;place-items:center;font-size:14px}
+.empty{text-align:center;padding:24px 10px;color:var(--ink2)}
+.empty .big{font-size:46px}
+/* report */
+.paper{background:#fff;color:#111;border-radius:14px;padding:18px;box-shadow:var(--shadow);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.paper h1{font-size:20px;margin:0 0 2px}
+.paper .meta{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12.5px;color:#444;margin:6px 0 12px;border-bottom:2px solid #5FAE7B;padding-bottom:8px}
+.paper h4{margin:14px 0 6px;font-size:13.5px;color:#2E6B4A;text-transform:uppercase;letter-spacing:.4px}
+.paper table{width:100%;border-collapse:collapse;font-size:11.5px}
+.paper th,.paper td{border:1px solid #cfd8d1;padding:4px 3px;text-align:center}
+.paper th{background:#EAF5EC;font-weight:700}
+.paper td.dt{font-weight:700;white-space:nowrap}
+.paper td.s0{background:#E3F4E8} .paper td.s1{background:#FFF1D2} .paper td.s2{background:#FFDFE3}
+.paper .sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.paper .sum div{border:1px solid #cfd8d1;border-radius:8px;padding:6px;text-align:center;font-size:11px;color:#555}
+.paper .sum b{display:block;font-size:16px;color:#111}
+.paper .foot{margin-top:12px;font-size:11px;color:#555;display:flex;justify-content:space-between;gap:14px}
+.paper .foot span{flex:1;border-top:1px solid #888;padding-top:4px;margin-top:24px}
+.paper .scroll{overflow-x:auto}
+.paper svg.chart text{font-family:inherit}
+@media print{
+  @page{size:A4;margin:11mm}
+  html,body{background:#fff!important}
+  .bgblob,header.top,nav,#back,#sheet,#toast,.noprint,.view:not(#v-report){display:none!important}
+  #app{padding:0!important;max-width:none}
+  #v-report{display:block!important;animation:none}
+  .paper{box-shadow:none;padding:0;border-radius:0}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .paper tr{break-inside:avoid}
+  .paper .scroll{overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="bgblob"></div>
+<div id="app">
+  <header class="top">
+    <div>
+      <h1 id="hello">Привет!</h1>
+      <div class="sub" id="today"></div>
+    </div>
+    <button class="avatar" data-act="nav" data-v="set" aria-label="Профиль">🌿</button>
+  </header>
+
+  <section class="view on" id="v-home"></section>
+  <section class="view" id="v-cal"></section>
+  <section class="view" id="v-stats"></section>
+  <section class="view" id="v-report"></section>
+  <section class="view" id="v-set"></section>
+</div>
+
+<nav>
+  <button data-act="nav" data-v="home" id="n-home"><span>🏡</span>Главная</button>
+  <button data-act="nav" data-v="cal" id="n-cal"><span>📅</span>Календарь</button>
+  <button class="fab" data-act="add" aria-label="Добавить измерение">+</button>
+  <button data-act="nav" data-v="stats" id="n-stats"><span>📈</span>Графики</button>
+  <button data-act="nav" data-v="set" id="n-set"><span>⚙️</span>Ещё</button>
+</nav>
+
+<div id="back" data-act="closeSheet"></div>
+<div id="sheet" role="dialog" aria-modal="true"></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ============ helpers ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const dkey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = k => { const [y, m, d] = k.split('-').map(Number); return new Date(y, m - 1, d, 12); };
+const addDays = (k, n) => { const d = parse(k); d.setDate(d.getDate() + n); return dkey(d); };
+const todayKey = () => dkey(new Date());
+const fmtLong = k => parse(k).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+const fmtShort = k => { const d = parse(k); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}`; };
+const fmtFull = k => { const d = parse(k); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`; };
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const wd = k => parse(k).toLocaleDateString('ru-RU', { weekday: 'long' });
+const num = v => { const n = parseFloat(String(v ?? '').replace(',', '.')); return Number.isFinite(n) ? n : null; };
+const r1 = n => (Math.round(n * 10) / 10).toFixed(1).replace('.', ',');
+const rng = (a, b) => { const out = []; let k = a; let guard = 0; while (k <= b && guard++ < 800) { out.push(k); k = addDays(k, 1); } return out; };
+const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+
+const SLOTS = [
+  { k: 'f', name: 'Натощак', short: 'Натощак', em: '🌅', col: '#4E9F6E' },
+  { k: 'b', name: 'Через час после завтрака', short: 'Завтрак', em: '🥣', col: '#F09A7B' },
+  { k: 'l', name: 'Через час после обеда', short: 'Обед', em: '🍲', col: '#6DA7D8' },
+  { k: 'd', name: 'Через час после ужина', short: 'Ужин', em: '🌙', col: '#A58BD6' }
+];
+
+/* ============ state ============ */
+const KEY = 'mint_v1';
+const DEF = {
+  name: '', fMin: 3.9, fMax: 5.1, pMax: 6.7, sysMax: 130, sysMin: 90, diaMax: 85, diaMin: 55,
+  rems: [
+    { id: 'f', label: 'Натощак', time: '07:30', on: true },
+    { id: 'b', label: 'Через час после завтрака', time: '09:30', on: true },
+    { id: 'l', label: 'Через час после обеда', time: '14:30', on: true },
+    { id: 'd', label: 'Через час после ужина', time: '20:30', on: true }
+  ]
+};
+let S = { entries: {}, settings: JSON.parse(JSON.stringify(DEF)), fired: {}, seen: false };
+function load() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(KEY));
+    if (raw) {
+      S.entries = raw.entries || {};
+      S.settings = Object.assign(JSON.parse(JSON.stringify(DEF)), raw.settings || {});
+      S.fired = raw.fired || {};
+      S.seen = !!raw.seen;
+    }
+  } catch (e) { /* ignore */ }
+}
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { toast('Не удалось сохранить: память заполнена'); }
+}
+load();
+
+/* ============ statuses ============ */
+function gSt(slot, v) {
+  if (v == null) return null;
+  const t = S.settings, max = slot === 'f' ? t.fMax : t.pMax, min = t.fMin;
+  if (v >= min && v <= max) return 0;
+  if ((v > max && v <= max + 0.7) || (v < min && v >= min - 0.5)) return 1;
+  return 2;
+}
+function bpSt(s, d) {
+  if (s == null || d == null) return null;
+  const t = S.settings; let sev = 0;
+  if (s > t.sysMax || d > t.diaMax) sev = 1;
+  if (s > t.sysMax + 10 || d > t.diaMax + 5) sev = 2;
+  if (s < t.sysMin || d < t.diaMin) sev = Math.max(sev, 1);
+  if (s < t.sysMin - 10 || d < t.diaMin - 10) sev = 2;
+  return sev;
+}
+const slotSt = (k, e) => {
+  if (!e) return null;
+  const a = gSt(k, e.g), b = bpSt(e.s, e.di);
+  if (a == null && b == null) return null;
+  return Math.max(a ?? 0, b ?? 0);
+};
+function dayStatus(date) {
+  const day = S.entries[date]; if (!day) return null;
+  let m = null;
+  for (const s of SLOTS) { const v = slotSt(s.k, day[s.k]); if (v != null) m = Math.max(m ?? 0, v); }
+  return m;
+}
+const filled = (date, k) => { const e = (S.entries[date] || {})[k]; return !!e && (e.g != null || e.s != null); };
+const bpTxt = e => (e && e.s != null && e.di != null) ? `${e.s}/${e.di}` : null;
+
+/* ============ UI core ============ */
+let view = 'home';
+let cal = { y: new Date().getFullYear(), m: new Date().getMonth(), sel: todayKey() };
+let statN = 14;
+let hidden = {};
+let rep = { from: addDays(todayKey(), -29), to: todayKey() };
+let edit = { date: todayKey(), focus: null };
+let deferredPrompt = null;
+
+function toast(t) {
+  const el = $('#toast'); el.textContent = t; el.classList.add('on');
+  clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2400);
+}
+function nav(v) {
+  view = v;
+  $$('.view').forEach(x => x.classList.toggle('on', x.id === 'v-' + v));
+  $$('nav button[id^="n-"]').forEach(b => b.classList.toggle('on', b.id === 'n-' + v));
+  render(); window.scrollTo({ top: 0 });
+}
+function render() {
+  const h = new Date().getHours();
+  const hi = h < 5 ? 'Доброй ночи' : h < 12 ? 'Доброе утро' : h < 18 ? 'Добрый день' : 'Добрый вечер';
+  const n = (S.settings.name || '').trim().split(/\s+/)[1] || (S.settings.name || '').trim().split(/\s+/)[0];
+  $('#hello').textContent = n ? `${hi}, ${n}!` : `${hi}!`;
+  $('#today').textContent = `${wd(todayKey())}, ${fmtLong(todayKey())}`;
+  ({ home: rHome, cal: rCal, stats: rStats, report: rReport, set: rSet })[view]();
+}
+
+/* ============ HOME ============ */
+function ring(p) {
+  const c = 2 * Math.PI * 34, o = c * (1 - p);
+  return `<div class="ring"><svg width="84" height="84" viewBox="0 0 84 84"><circle cx="42" cy="42" r="34" stroke="rgba(255,255,255,.3)" stroke-width="9" fill="none"/><circle cx="42" cy="42" r="34" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${o}"/></svg><b>${Math.round(p * 4)}/4</b></div>`;
+}
+function pill(txt, st) { return `<span class="pill ${st == null ? 'none' : 's' + st}">${txt}</span>`; }
+function rHome() {
+  const t = todayKey(), day = S.entries[t] || {};
+  const done = SLOTS.filter(s => filled(t, s.k)).length;
+  const next = SLOTS.find(s => !filled(t, s.k));
+  const total = Object.keys(S.entries).length;
+  let h = '';
+  if (!total) {
+    h += `<div class="card"><div class="empty"><div class="big">🌱</div><h2>Добро пожаловать в «Мяту»</h2>
+      <div style="margin-bottom:14px">Записывайте глюкозу и давление — приложение само раскрасит показатели, построит графики и соберёт отчёт для врача.</div>
+      <button class="btn block" data-act="add">Добавить первое измерение</button>
+      <button class="btn ghost block" style="margin-top:8px" data-act="demo">Посмотреть на примере</button></div></div>`;
+  }
+  h += `<div class="card hero"><div class="row">${ring(done / 4)}<div class="grow">
+      <div style="font-size:19px;font-weight:800">${done === 4 ? 'Все замеры сделаны! 🎉' : done ? 'Отличное начало!' : 'Сегодня ещё нет замеров'}</div>
+      <div class="sub" style="margin-top:3px">${next ? 'Следующий: ' + next.name.toLowerCase() : 'Так держать, день закрыт'}</div></div></div>
+      ${next ? `<button class="btn white block" style="margin-top:14px" data-act="editDay" data-date="${t}" data-slot="${next.k}">+ Записать «${next.short.toLowerCase()}»</button>` : ''}</div>`;
+  h += `<div class="slots" style="margin-bottom:14px">` + SLOTS.map(s => {
+    const e = day[s.k]; const bp = bpTxt(e);
+    return `<button class="slot" data-act="editDay" data-date="${t}" data-slot="${s.k}">
+      <div class="em">${s.em}</div><div class="nm">${s.short}</div>
+      <div class="vals">${e && e.g != null ? pill(r1(e.g) + ' <small>ммоль</small>', gSt(s.k, e.g)) : pill('глюкоза', null)}
+      ${bp ? pill(bp, bpSt(e.s, e.di)) : pill('давление', null)}</div></button>`;
+  }).join('') + `</div>`;
+  const ds = rng(addDays(t, -6), t);
+  h += `<div class="card"><div class="row between" style="margin-bottom:10px"><h2 style="margin:0">Последние 7 дней</h2><button class="btn ghost sm" data-act="nav" data-v="cal">Календарь</button></div>
+    <div class="dots7">${ds.map(k => { const st = dayStatus(k); const dd = parse(k); return `<button class="d7 ${k === t ? 'today' : ''}" data-act="editDay" data-date="${k}"><i class="${st == null ? '' : 's' + st}">${st == null ? '' : '✓'}</i>${dd.toLocaleDateString('ru-RU', { weekday: 'short' })}</button>`; }).join('')}</div></div>`;
+  const streak = (() => { let n = 0, k = t; if (!S.entries[k]) k = addDays(k, -1); while (S.entries[k]) { n++; k = addDays(k, -1); } return n; })();
+  h += `<div class="row" style="gap:10px;margin-bottom:6px">
+    <div class="kpi grow"><div class="k">🔥 Серия дней</div><div class="v">${streak}</div></div>
+    <button class="kpi grow" style="text-align:left" data-act="nav" data-v="report"><div class="k">📄 Отчёт для врача</div><div class="v" style="font-size:17px;color:var(--mint-d)">Открыть →</div></button></div>`;
+  $('#v-home').innerHTML = h;
+}
+
+/* ============ CALENDAR ============ */
+function rCal() {
+  const { y, m } = cal, first = new Date(y, m, 1), off = (first.getDay() + 6) % 7, dim = new Date(y, m + 1, 0).getDate();
+  const title = cap(first.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })), t = todayKey();
+  let cells = '';
+  for (let i = 0; i < off; i++) cells += `<div class="cell out"></div>`;
+  for (let d = 1; d <= dim; d++) {
+    const k = `${y}-${pad(m + 1)}-${pad(d)}`, st = dayStatus(k), day = S.entries[k] || {};
+    const dots = SLOTS.map(s => { const v = slotSt(s.k, day[s.k]); return `<u class="${v == null ? '' : 's' + v}"></u>`; }).join('');
+    cells += `<button class="cell ${st == null ? '' : 's' + st} ${k === t ? 'today' : ''} ${k === cal.sel ? 'sel' : ''} ${k > t ? 'future' : ''}" data-act="calPick" data-date="${k}">${d}<div class="cd">${dots}</div></button>`;
+  }
+  const sel = cal.sel, sd = S.entries[sel] || {};
+  const has = SLOTS.some(s => filled(sel, s.k));
+  let h = `<div class="card"><div class="calhead"><button class="icb" data-act="calPrev">‹</button><b>${title}</b><button class="icb" data-act="calNext">›</button></div>
+    <div class="wk">${['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(x => `<span>${x}</span>`).join('')}</div><div class="grid">${cells}</div>
+    <div class="legend"><span style="--c:var(--ok)">В норме</span><span style="--c:#F2B34C">Чуть выше/ниже</span><span style="--c:var(--bad)">Вне нормы</span></div>
+    <button class="btn ghost sm" style="margin-top:12px" data-act="calToday">Сегодня</button></div>`;
+  h += `<div class="card"><div class="row between" style="margin-bottom:8px"><h2 style="margin:0">${cap(wd(sel))}, ${fmtLong(sel)}</h2><button class="btn sm" data-act="editDay" data-date="${sel}">${has ? 'Изменить' : 'Добавить'}</button></div>`;
+  h += has ? SLOTS.map(s => { const e = sd[s.k]; if (!e) return ''; return `<div class="row between" style="padding:8px 0;border-top:1px solid var(--line)"><div>${s.em} <b>${s.short}</b></div><div class="row" style="gap:6px">${e.g != null ? pill(r1(e.g), gSt(s.k, e.g)) : ''}${bpTxt(e) ? pill(bpTxt(e), bpSt(e.s, e.di)) : ''}</div></div>`; }).join('')
+    : `<div class="sub">В этот день записей нет.</div>`;
+  h += `</div>`;
+  $('#v-cal').innerHTML = h;
+}
+
+/* ============ CHARTS ============ */
+function lineChart(o) {
+  const W = o.w || 340, H = o.h || 190, pl = 30, pr = 10, pt = 10, pb = 22, n = o.keys.length;
+  const x = i => pl + (n <= 1 ? (W - pl - pr) / 2 : i * (W - pl - pr) / (n - 1));
+  const all = o.series.flatMap(s => s.vals.filter(v => v != null)).concat((o.lines || []).map(l => l.y));
+  if (!all.length) return `<div class="empty">Пока нет данных за этот период</div>`;
+  let lo = Math.min(...all), hi = Math.max(...all);
+  const span0 = Math.max(hi - lo, 1), want = span0 * 1.25 / 4;
+  const step = [0.5, 1, 2, 5, 10, 20, 25, 50].find(c => c >= want) || 50;
+  lo = Math.floor((lo - span0 * .08) / step) * step; hi = Math.ceil((hi + span0 * .08) / step) * step;
+  if (hi <= lo) hi = lo + step;
+  const ticks = []; for (let v = lo; v <= hi + 1e-9; v += step) ticks.push(v);
+  const y = v => pt + (H - pt - pb) * (1 - (v - lo) / (hi - lo));
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">`;
+  if (o.band) s += `<rect x="${pl}" y="${y(o.band[1])}" width="${W - pl - pr}" height="${Math.max(0, y(o.band[0]) - y(o.band[1]))}" rx="6" fill="#DDF1E3" opacity=".7"/>`;
+  ticks.forEach(v => {
+    const yy = y(v);
+    s += `<line x1="${pl}" x2="${W - pr}" y1="${yy}" y2="${yy}" stroke="#E6EFE6" stroke-width="1"/><text x="${pl - 5}" y="${yy + 3.5}" text-anchor="end" font-size="10" fill="#7F9788">${step >= 1 ? Math.round(v) : v.toFixed(1).replace('.', ',')}</text>`;
+  });
+  (o.lines || []).forEach(l => { s += `<line x1="${pl}" x2="${W - pr}" y1="${y(l.y)}" y2="${y(l.y)}" stroke="${l.c}" stroke-width="1.2" stroke-dasharray="4 4"/>`; });
+  const lab = Math.min(5, n);
+  for (let i = 0; i < lab; i++) { const idx = lab === 1 ? 0 : Math.round(i * (n - 1) / (lab - 1)); s += `<text x="${x(idx)}" y="${H - 6}" text-anchor="middle" font-size="10" fill="#7F9788">${fmtShort(o.keys[idx])}</text>`; }
+  o.series.forEach(se => {
+    if (hidden[se.id]) return;
+    const pts = se.vals.map((v, i) => v == null ? null : [x(i), y(v)]).filter(Boolean);
+    if (!pts.length) return;
+    if (pts.length > 1) s += `<polyline points="${pts.map(p => p.map(c => c.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="${se.col}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    pts.forEach(p => { s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${n > 30 ? 1.8 : 3}" fill="#fff" stroke="${se.col}" stroke-width="2"/>`; });
+  });
+  return s + `</svg>`;
+}
+function glucoseChart(keys, o = {}) {
+  const t = S.settings;
+  return lineChart({
+    keys, w: o.w, h: o.h, band: [t.fMin, t.pMax],
+    lines: [{ y: t.fMax, c: '#4E9F6E' }, { y: t.pMax, c: '#D9576B' }],
+    series: SLOTS.map(s => ({ id: s.k, col: s.col, vals: keys.map(k => { const e = (S.entries[k] || {})[s.k]; return e && e.g != null ? e.g : null; }) }))
+  });
+}
+function dayBP(k) {
+  const d = S.entries[k] || {}, a = [], b = [];
+  SLOTS.forEach(s => { const e = d[s.k]; if (e && e.s != null && e.di != null) { a.push(e.s); b.push(e.di); } });
+  return a.length ? [Math.round(avg(a)), Math.round(avg(b))] : [null, null];
+}
+function bpChart(keys, o = {}) {
+  const t = S.settings, v = keys.map(dayBP);
+  return lineChart({
+    keys, w: o.w, h: o.h, step: 10, band: [t.diaMin, t.sysMax],
+    lines: [{ y: t.sysMax, c: '#D9576B' }, { y: t.diaMax, c: '#6DA7D8' }],
+    series: [{ id: 'sys', col: '#D9778B', vals: v.map(x => x[0]) }, { id: 'dia', col: '#6DA7D8', vals: v.map(x => x[1]) }]
+  });
+}
+
+/* ============ STATS ============ */
+function calcStats(keys) {
+  const per = {}; SLOTS.forEach(s => per[s.k] = []);
+  let all = [], inr = 0, sys = [], dia = [], worst = null, daysWith = 0;
+  keys.forEach(k => {
+    const d = S.entries[k]; if (!d) return; let any = false;
+    SLOTS.forEach(s => {
+      const e = d[s.k]; if (!e) return;
+      if (e.g != null) { any = true; per[s.k].push(e.g); all.push(e.g); if (gSt(s.k, e.g) === 0) inr++; if (!worst || e.g > worst.g) worst = { g: e.g, k, s }; }
+      if (e.s != null && e.di != null) { any = true; sys.push(e.s); dia.push(e.di); }
+    });
+    if (any) daysWith++;
+  });
+  const post = [...per.b, ...per.l, ...per.d];
+  return { per, all, post, fast: per.f, pct: all.length ? Math.round(inr / all.length * 100) : null, sys: avg(sys), dia: avg(dia), bpN: sys.length, worst, daysWith };
+}
+function rStats() {
+  const t = todayKey(), keys = rng(addDays(t, -(statN - 1)), t), st = calcStats(keys);
+  const fa = avg(st.fast), pa = avg(st.post);
+  const kpi = (k, v, u, s) => `<div class="kpi ${s == null ? '' : 's' + s}"><div class="k">${k}</div><div class="v">${v}<span class="u"> ${u}</span></div></div>`;
+  let h = `<div class="chips" style="margin-bottom:14px">${[7, 14, 30, 90].map(n => `<button class="chip ${statN === n ? 'on' : ''}" data-act="statRange" data-n="${n}">${n} дн.</button>`).join('')}</div>`;
+  if (!st.daysWith) {
+    h += `<div class="card"><div class="empty"><div class="big">📊</div><h2>Пока пусто</h2><div style="margin-bottom:12px">Добавьте измерения — здесь появятся графики и статистика.</div><button class="btn" data-act="add">Добавить</button> <button class="btn ghost" data-act="demo">Пример</button></div></div>`;
+    $('#v-stats').innerHTML = h; return;
+  }
+  h += `<div class="kpis">
+    ${kpi('Натощак, среднее', fa == null ? '—' : r1(fa), 'ммоль/л', fa == null ? null : gSt('f', fa))}
+    ${kpi('После еды, среднее', pa == null ? '—' : r1(pa), 'ммоль/л', pa == null ? null : gSt('b', pa))}
+    ${kpi('В целевом диапазоне', st.pct == null ? '—' : st.pct, '%', st.pct == null ? null : st.pct >= 80 ? 0 : st.pct >= 60 ? 1 : 2)}
+    ${kpi('Давление, среднее', st.sys == null ? '—' : Math.round(st.sys) + '/' + Math.round(st.dia), '', st.sys == null ? null : bpSt(Math.round(st.sys), Math.round(st.dia)))}</div>`;
+  const msg = st.pct == null ? '' : st.pct >= 90 ? 'Отличные результаты, так держать! 🌿' : st.pct >= 70 ? 'Хорошо! Небольшие отклонения — обсудите с врачом, если повторяются.' : 'Много значений вне цели — покажите отчёт врачу.';
+  if (msg) h += `<div class="note" style="margin-bottom:14px">${msg}</div>`;
+  h += `<div class="card"><h2>Глюкоза, ммоль/л</h2><div class="leg">${SLOTS.map(s => `<button class="lg ${hidden[s.k] ? 'off' : ''}" style="--c:${s.col}" data-act="toggleSeries" data-id="${s.k}">${s.short}</button>`).join('')}</div>${glucoseChart(keys)}
+    <div class="sub" style="margin-top:6px">Зелёная зона — целевой диапазон. Пунктир: ${r1(S.settings.fMax)} натощак, ${r1(S.settings.pMax)} после еды.</div></div>`;
+  h += `<div class="card"><h2>Давление, мм рт. ст.</h2><div class="leg"><button class="lg ${hidden.sys ? 'off' : ''}" style="--c:#D9778B" data-act="toggleSeries" data-id="sys">Верхнее</button><button class="lg ${hidden.dia ? 'off' : ''}" style="--c:#6DA7D8" data-act="toggleSeries" data-id="dia">Нижнее</button></div>${bpChart(keys)}</div>`;
+  if (st.worst) h += `<div class="card"><h2>Самое высокое значение</h2><div class="row"><div class="pill s${gSt(st.worst.s.k, st.worst.g)}" style="font-size:20px">${r1(st.worst.g)}</div><div class="sub">${fmtLong(st.worst.k)} · ${st.worst.s.short.toLowerCase()}</div></div></div>`;
+  h += `<button class="btn block" data-act="nav" data-v="report">📄 Сформировать PDF-отчёт</button>`;
+  $('#v-stats').innerHTML = h;
+}
+
+/* ============ EDITOR SHEET ============ */
+function openSheet(html) { $('#sheet').innerHTML = html; $('#sheet').classList.add('on'); $('#back').classList.add('on'); $('#sheet').scrollTop = 0; }
+function closeSheet() { $('#sheet').classList.remove('on'); $('#back').classList.remove('on'); }
+function openEditor(date, focus) {
+  edit = { date, focus };
+  const day = S.entries[date] || {}, t = todayKey();
+  const body = SLOTS.map(s => {
+    const e = day[s.k] || {};
+    return `<div class="eslot ${focus === s.k ? 'focus' : ''}" id="es-${s.k}"><h3><span>${s.em}</span>${s.name}</h3>
+      <div class="eg"><div><label>Глюкоза, ммоль/л</label><input class="in" inputmode="decimal" autocomplete="off" id="g-${s.k}" data-slot="${s.k}" placeholder="5,2" value="${e.g != null ? String(e.g).replace('.', ',') : ''}"></div>
+      <div><label>Давление, верх / низ</label><div class="bp"><input class="in" inputmode="numeric" id="s-${s.k}" data-slot="${s.k}" placeholder="120" value="${e.s ?? ''}"><i>/</i><input class="in" inputmode="numeric" id="di-${s.k}" data-slot="${s.k}" placeholder="80" value="${e.di ?? ''}"></div></div></div></div>`;
+  }).join('');
+  openSheet(`<div class="grab"></div>
+    <div class="daynav"><button class="icb" data-act="prevDay">‹</button><div style="text-align:center"><b>${cap(wd(date))}, ${fmtLong(date)}</b><div class="sub">${date === t ? 'сегодня' : fmtFull(date)}</div></div><button class="icb" data-act="nextDay">›</button></div>
+    ${body}
+    <div class="row" style="margin-top:6px"><button class="btn danger" data-act="delDay">Очистить</button><button class="btn grow" data-act="saveDay">Сохранить</button></div>`);
+  $$('#sheet input.in').forEach(liveColor);
+  if (focus) setTimeout(() => { const el = $('#g-' + focus); if (el) { el.focus(); } }, 320);
+}
+function liveColor(el) {
+  const k = el.dataset.slot; if (!k) return;
+  const g = $('#g-' + k), s = $('#s-' + k), d = $('#di-' + k);
+  const set = (el2, st) => { el2.classList.remove('s0', 's1', 's2'); if (st != null) el2.classList.add('s' + st); };
+  const gv = num(g.value), sv = num(s.value), dv = num(d.value);
+  set(g, gv == null ? null : gSt(k, gv));
+  const bs = bpSt(sv, dv); set(s, bs); set(d, bs);
+}
+function collect() {
+  const out = {}; let bad = null;
+  SLOTS.forEach(s => {
+    const g = num($('#g-' + s.k).value), sv = num($('#s-' + s.k).value), dv = num($('#di-' + s.k).value);
+    if (g != null && (g < 1 || g > 40)) bad = bad || s.name;
+    if ((sv == null) !== (dv == null)) bad = bad || s.name;
+    if (sv != null && (sv < 50 || sv > 260 || dv < 30 || dv > 160 || dv >= sv)) bad = bad || s.name;
+    if (g != null || sv != null) out[s.k] = { g: g, s: sv != null ? Math.round(sv) : null, di: dv != null ? Math.round(dv) : null };
+  });
+  return { out, bad };
+}
+function saveDay() {
+  const { out, bad } = collect();
+  if (bad) { toast('Проверьте значения: ' + bad.toLowerCase()); return; }
+  if (Object.keys(out).length) S.entries[edit.date] = out; else delete S.entries[edit.date];
+  save(); closeSheet(); toast('Сохранено 💚'); render();
+}
+function gotoDay(date) {
+  const cur = collect();
+  if (cur.bad) { toast('Сначала исправьте значения'); return; }
+  if (Object.keys(cur.out).length) S.entries[edit.date] = cur.out; else delete S.entries[edit.date];
+  save(); openEditor(date, null); render();
+}
+
+/* ============ REPORT ============ */
+function reportHTML() {
+  const keys = rng(rep.from, rep.to), st = calcStats(keys), t = S.settings;
+  const rows = keys.filter(k => S.entries[k]).map(k => {
+    const d = S.entries[k];
+    return `<tr><td class="dt">${fmtShort(k)}</td>` + SLOTS.map(s => {
+      const e = d[s.k]; if (!e) return `<td></td><td></td>`;
+      return `<td class="${e.g != null ? 's' + gSt(s.k, e.g) : ''}">${e.g != null ? r1(e.g) : ''}</td><td class="${bpTxt(e) ? 's' + bpSt(e.s, e.di) : ''}">${bpTxt(e) || ''}</td>`;
+    }).join('') + `</tr>`;
+  }).join('');
+  const fa = avg(st.fast), pa = avg(st.post);
+  const cnt = st.all.length;
+  const mx = cnt ? Math.max(...st.all) : null, mn = cnt ? Math.min(...st.all) : null;
+  return `<h1>Дневник самоконтроля: глюкоза и давление</h1>
+    <div class="meta"><span><b>Пациент:</b> ${esc(t.name) || '____________________'}</span><span><b>Период:</b> ${fmtFull(rep.from)} — ${fmtFull(rep.to)}</span><span><b>Сформирован:</b> ${fmtFull(todayKey())}</span></div>
+    ${st.daysWith ? `<h4>Сводка</h4><div class="sum">
+      <div>Глюкоза натощак<b>${fa == null ? '—' : r1(fa)}</b>среднее, ммоль/л</div>
+      <div>После еды<b>${pa == null ? '—' : r1(pa)}</b>среднее, ммоль/л</div>
+      <div>В целевом диапазоне<b>${st.pct == null ? '—' : st.pct + '%'}</b>из ${cnt} измерений</div>
+      <div>Давление<b>${st.sys == null ? '—' : Math.round(st.sys) + '/' + Math.round(st.dia)}</b>среднее, мм рт. ст.</div>
+      <div>Мин / макс<b>${mn == null ? '—' : r1(mn) + ' / ' + r1(mx)}</b>глюкоза, ммоль/л</div>
+      <div>Дней с записями<b>${st.daysWith}</b>из ${keys.length}</div></div>
+      <h4>Динамика глюкозы</h4><div class="leg" style="margin-bottom:4px">${SLOTS.map(s => `<span class="lg" style="--c:${s.col}">${s.short}</span>`).join('')}</div>${glucoseChart(keys, { w: 520, h: 210 })}
+      <h4>Динамика давления (среднее за день)</h4><div class="leg" style="margin-bottom:4px"><span class="lg" style="--c:#D9778B">Верхнее</span><span class="lg" style="--c:#6DA7D8">Нижнее</span></div>${bpChart(keys, { w: 520, h: 190 })}
+      <h4>Записи по дням</h4><div class="scroll"><table><thead><tr><th rowspan="2">Дата</th>${SLOTS.map(s => `<th colspan="2">${s.short}</th>`).join('')}</tr><tr>${SLOTS.map(() => '<th>Глюк.</th><th>АД</th>').join('')}</tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="foot"><div>Ориентиры: глюкоза натощак ${r1(t.fMin)}–${r1(t.fMax)}, через час после еды до ${r1(t.pMax)} ммоль/л; АД до ${t.sysMax}/${t.diaMax} мм рт. ст. Зелёный — в цели, жёлтый — небольшое отклонение, красный — вне цели.</div></div>
+      <div class="foot"><span>Подпись врача</span><span>Дата приёма</span></div>`
+      : `<div class="empty">За выбранный период записей нет</div>`}`;
+}
+function rReport() {
+  const t = todayKey(), thisM = t.slice(0, 8) + '01';
+  const preset = (lbl, f, to, id) => `<button class="chip ${rep.from === f && rep.to === to ? 'on' : ''}" data-act="repPreset" data-f="${f}" data-t="${to}">${lbl}</button>`;
+  const prevMEnd = addDays(thisM, -1), prevMStart = prevMEnd.slice(0, 8) + '01';
+  $('#v-report').innerHTML = `<div class="card noprint"><h2>Отчёт для врача</h2>
+    <div class="chips" style="margin-bottom:12px">${preset('7 дней', addDays(t, -6), t)}${preset('14 дней', addDays(t, -13), t)}${preset('30 дней', addDays(t, -29), t)}${preset('Этот месяц', thisM, t)}${preset('Прошлый месяц', prevMStart, prevMEnd)}</div>
+    <div class="row" style="margin-bottom:12px"><div class="grow"><div class="sub">С</div><input class="in" type="date" id="rf" value="${rep.from}" max="${t}"></div><div class="grow"><div class="sub">По</div><input class="in" type="date" id="rt" value="${rep.to}" max="${t}"></div></div>
+    <div class="grow" style="margin-bottom:12px"><div class="sub">Имя пациента (в шапке отчёта)</div><input class="in" id="rname" value="${esc(S.settings.name)}" placeholder="Фамилия Имя Отчество"></div>
+    <button class="btn block" data-act="printReport">📄 Сохранить как PDF / Печать</button>
+    <div class="row" style="margin-top:8px"><button class="btn ghost grow" data-act="shareReport">Поделиться</button><button class="btn ghost grow" data-act="csv">Таблица CSV</button></div>
+    <div class="sub" style="margin-top:10px">iPhone: нажмите «Сохранить как PDF», затем «Поделиться» → «Сохранить в Файлы» или отправьте врачу в мессенджере.</div></div>
+    <div class="paper" id="paper">${reportHTML()}</div>`;
+}
+function csvText() {
+  const keys = rng(rep.from, rep.to);
+  const head = ['Дата'].concat(SLOTS.flatMap(s => [s.short + ' глюкоза', s.short + ' давление']));
+  const lines = [head.join(';')];
+  keys.forEach(k => {
+    const d = S.entries[k]; if (!d) return;
+    lines.push([fmtFull(k)].concat(SLOTS.flatMap(s => { const e = d[s.k]; return [e && e.g != null ? String(e.g).replace('.', ',') : '', e ? (bpTxt(e) || '') : '']; })).join(';'));
+  });
+  return '﻿' + lines.join('\r\n');
+}
+function download(name, text, type) {
+  const blob = new Blob([text], { type });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+async function shareReport() {
+  const csv = csvText(), name = `dnevnik_${rep.from}_${rep.to}.csv`;
+  try {
+    const f = new File([csv], name, { type: 'text/csv' });
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: 'Дневник самоконтроля' }); return; }
+    if (navigator.share) { await navigator.share({ title: 'Дневник самоконтроля', text: `Дневник за ${fmtFull(rep.from)} — ${fmtFull(rep.to)}` }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  download(name, csv, 'text/csv'); toast('Файл сохранён');
+}
+
+/* ============ SETTINGS ============ */
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function notifState() {
+  if (!('Notification' in window)) return 'unsupported';
+  return Notification.permission;
+}
+function numField(label, key, step, hint) {
+  return `<div class="field"><label>${label}${hint ? `<small>${hint}</small>` : ''}</label><input class="in sm" inputmode="decimal" data-set="${key}" value="${String(S.settings[key]).replace('.', ',')}"></div>`;
+}
+function rSet() {
+  const t = S.settings, ns = notifState();
+  let h = `<div class="card"><h2>👤 Профиль</h2><input class="in" data-set="name" placeholder="Фамилия Имя Отчество" value="${esc(t.name)}"></div>`;
+  if (!isStandalone()) {
+    h += `<div class="card" style="background:linear-gradient(150deg,#EAF7EE,#fff)"><h2>📲 Установить на главный экран</h2><div class="sub" style="margin-bottom:12px">Приложение откроется как обычное — без адресной строки, работает без интернета.</div><button class="btn block" data-act="install">Как установить</button></div>`;
+  }
+  h += `<div class="card"><h2>🔔 Напоминания</h2>`;
+  h += t.rems.map(r => `<div class="field"><div class="row grow"><button class="sw ${r.on ? 'on' : ''}" data-act="remToggle" data-id="${r.id}" aria-label="Вкл/выкл"></button><label>${r.label}</label></div><input class="in time" type="time" data-rem="${r.id}" value="${r.time}"></div>`).join('');
+  h += `<div style="margin-top:12px">`;
+  if (ns === 'unsupported') h += `<div class="note">Уведомления в этом браузере недоступны. На iPhone сначала добавьте приложение на главный экран (iOS 16.4+).</div>`;
+  else if (ns === 'granted') h += `<div class="note" style="margin-bottom:8px">Уведомления включены ✓</div><button class="btn ghost block" data-act="notifTest">Отправить пробное уведомление</button>`;
+  else if (ns === 'denied') h += `<div class="note" style="background:var(--bad-bg);color:var(--bad)">Уведомления запрещены. Разрешите их в настройках телефона для этого приложения.</div>`;
+  else h += `<button class="btn block" data-act="notifOn">Включить уведомления</button>`;
+  h += `<div class="sub" style="margin-top:10px">Напоминания приходят, пока приложение установлено и телефон его не выгрузил из памяти. Если замер за этот приём уже внесён, напоминание не показывается.</div></div></div>`;
+  h += `<div class="card"><h2>🎯 Целевые значения</h2>
+    ${numField('Натощак, от', 'fMin', .1, 'ммоль/л')}${numField('Натощак, до', 'fMax', .1, 'ммоль/л')}${numField('Через час после еды, до', 'pMax', .1, 'ммоль/л')}
+    ${numField('Давление верхнее, до', 'sysMax')}${numField('Давление нижнее, до', 'diaMax')}${numField('Верхнее, не ниже', 'sysMin')}${numField('Нижнее, не ниже', 'diaMin')}
+    <div class="sub" style="margin-top:8px">Цели лучше согласовать с лечащим врачом.</div></div>`;
+  h += `<div class="card"><h2>💾 Данные</h2><div class="sub" style="margin-bottom:10px">Всё хранится только на вашем телефоне. Делайте копию — например, перед сменой телефона.</div>
+    <div class="row"><button class="btn ghost grow" data-act="export">Сохранить копию</button><button class="btn ghost grow" data-act="import">Загрузить копию</button></div>
+    <input type="file" id="impfile" accept="application/json,.json" hidden>
+    <div class="row" style="margin-top:8px"><button class="btn ghost grow" data-act="demo">Пример данных</button><button class="btn danger grow" data-act="clear">Удалить всё</button></div></div>`;
+  h += `<div class="sub" style="text-align:center;margin:6px 0 10px">Мята · дневник здоровья · v1.0<br>Приложение не заменяет консультацию врача.</div>`;
+  $('#v-set').innerHTML = h;
+}
+function installHelp() {
+  if (deferredPrompt) { try { deferredPrompt.prompt(); deferredPrompt.userChoice.finally(() => { deferredPrompt = null; }); return; } catch (e) { deferredPrompt = null; } }
+  const ios = isIOS();
+  openSheet(`<div class="grab"></div><h2>📲 Установка на главный экран</h2>` + (ios ? `
+    <div class="step"><b class="n">1</b><div>Откройте эту страницу в <b>Safari</b> (в других браузерах кнопки установки нет).</div></div>
+    <div class="step"><b class="n">2</b><div>Нажмите кнопку <b>«Поделиться»</b> <span style="font-size:20px">⬆️</span> внизу экрана.</div></div>
+    <div class="step"><b class="n">3</b><div>Выберите <b>«На экран “Домой”»</b> и нажмите «Добавить».</div></div>
+    <div class="step"><b class="n">4</b><div>Откройте «Мяту» с главного экрана и включите уведомления в настройках приложения.</div></div>`
+    : `<div class="step"><b class="n">1</b><div>Откройте меню браузера <b>⋮</b> в правом верхнем углу.</div></div>
+    <div class="step"><b class="n">2</b><div>Выберите <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.</div></div>
+    <div class="step"><b class="n">3</b><div>Подтвердите — иконка появится среди приложений.</div></div>`) +
+    `<button class="btn block" style="margin-top:12px" data-act="closeSheet">Понятно</button>`);
+}
+
+/* ============ notifications ============ */
+async function showNote(title, body) {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification(title, { body, icon: 'icon-192.png', badge: 'icon-192.png', tag: 'mint-' + title + body, renotify: true });
+    return true;
+  } catch (e) {
+    try { new Notification(title, { body, icon: 'icon-192.png' }); return true; } catch (e2) { return false; }
+  }
+}
+function checkReminders() {
+  const now = new Date(), t = todayKey(), mins = now.getHours() * 60 + now.getMinutes();
+  S.fired[t] = S.fired[t] || {}; let changed = false;
+  Object.keys(S.fired).forEach(k => { if (k < addDays(t, -3)) { delete S.fired[k]; changed = true; } });
+  S.settings.rems.forEach(r => {
+    if (!r.on || S.fired[t][r.id] || filled(t, r.id)) return;
+    const [hh, mm] = r.time.split(':').map(Number), due = hh * 60 + mm, diff = mins - due;
+    if (diff >= 0 && diff <= 20) {
+      S.fired[t][r.id] = 1; changed = true;
+      const title = 'Пора измерить 💚', body = r.label;
+      if (notifState() === 'granted') showNote(title, body); else toast(`${title} ${body}`);
+    }
+  });
+  if (changed) save();
+}
+
+/* ============ demo ============ */
+function demoData() {
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = (a, b) => a + rnd() * (b - a), t = todayKey();
+  for (let i = 44; i >= 0; i--) {
+    const k = addDays(t, -i), day = {};
+    SLOTS.forEach(s => {
+      if (i === 0 && s.k !== 'f') return;
+      let g = s.k === 'f' ? pick(4.0, 4.8) : pick(5.0, 6.3);
+      if (rnd() < .06) g += pick(.4, 1.1);
+      const sy = Math.round(pick(109, 121) + (rnd() < .07 ? 10 : 0)), di = Math.round(pick(64, 80) + (rnd() < .07 ? 8 : 0));
+      day[s.k] = { g: Math.round(g * 10) / 10, s: sy, di: di };
+    });
+    S.entries[k] = day;
+  }
+  save();
+}
+
+/* ============ actions ============ */
+const ACT = {
+  nav: el => nav(el.dataset.v),
+  add: () => openEditor(view === 'cal' ? cal.sel : todayKey(), null),
+  editDay: el => openEditor(el.dataset.date, el.dataset.slot || null),
+  closeSheet,
+  saveDay,
+  delDay: () => { if (confirm('Очистить все записи за этот день?')) { delete S.entries[edit.date]; save(); closeSheet(); toast('День очищен'); render(); } },
+  prevDay: () => gotoDay(addDays(edit.date, -1)),
+  nextDay: () => { if (edit.date >= todayKey()) { toast('Это сегодняшний день'); return; } gotoDay(addDays(edit.date, 1)); },
+  calPrev: () => { cal.m--; if (cal.m < 0) { cal.m = 11; cal.y--; } rCal(); },
+  calNext: () => { cal.m++; if (cal.m > 11) { cal.m = 0; cal.y++; } rCal(); },
+  calToday: () => { const d = new Date(); cal = { y: d.getFullYear(), m: d.getMonth(), sel: todayKey() }; rCal(); },
+  calPick: el => { cal.sel = el.dataset.date; rCal(); if (!SLOTS.some(s => filled(cal.sel, s.k)) && cal.sel <= todayKey()) openEditor(cal.sel, null); },
+  statRange: el => { statN = +el.dataset.n; rStats(); },
+  toggleSeries: el => { hidden[el.dataset.id] = !hidden[el.dataset.id]; rStats(); },
+  repPreset: el => { rep = { from: el.dataset.f, to: el.dataset.t }; rReport(); },
+  printReport: () => { const nm = $('#rname'); if (nm) { S.settings.name = nm.value.trim(); save(); } $('#paper').innerHTML = reportHTML(); setTimeout(() => window.print(), 80); },
+  shareReport,
+  csv: () => { download(`dnevnik_${rep.from}_${rep.to}.csv`, csvText(), 'text/csv'); toast('Таблица сохранена'); },
+  install: installHelp,
+  remToggle: el => { const r = S.settings.rems.find(x => x.id === el.dataset.id); r.on = !r.on; save(); rSet(); },
+  notifOn: async () => {
+    if (!('Notification' in window)) { toast('Не поддерживается'); return; }
+    const p = await Notification.requestPermission(); rSet();
+    if (p === 'granted') { showNote('Уведомления включены 💚', 'Мята напомнит вовремя измерить показатели'); toast('Готово!'); }
+  },
+  notifTest: async () => { const ok = await showNote('Пора измерить 💚', 'Пробное уведомление'); toast(ok ? 'Отправлено' : 'Не удалось показать'); },
+  demo: () => { if (Object.keys(S.entries).length && !confirm('Добавить пример поверх ваших записей? Записи за последние 45 дней будут заменены.')) return; demoData(); toast('Пример загружен 🌿'); render(); },
+  clear: () => { if (confirm('Удалить все записи? Это нельзя отменить.')) { S.entries = {}; save(); toast('Данные удалены'); render(); } },
+  export: () => { download(`myata_backup_${todayKey()}.json`, JSON.stringify({ entries: S.entries, settings: S.settings }), 'application/json'); toast('Копия сохранена'); },
+  import: () => $('#impfile').click()
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  const f = ACT[el.dataset.act]; if (f) f(el, e);
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.matches('#sheet input.in')) liveColor(el);
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.dataset.set) {
+    const k = el.dataset.set;
+    if (k === 'name') S.settings.name = el.value.trim();
+    else { const v = num(el.value); if (v == null || v <= 0) { toast('Введите число'); rSet(); return; } S.settings[k] = v; }
+    save(); toast('Сохранено'); render();
+  } else if (el.dataset.rem) {
+    const r = S.settings.rems.find(x => x.id === el.dataset.rem); if (el.value) { r.time = el.value; save(); toast('Время обновлено'); }
+  } else if (el.id === 'rf' || el.id === 'rt') {
+    const f = $('#rf').value, t = $('#rt').value;
+    if (f && t && f <= t) { rep = { from: f, to: t }; rReport(); } else toast('Проверьте даты');
+  } else if (el.id === 'rname') {
+    S.settings.name = el.value.trim(); save(); $('#paper').innerHTML = reportHTML();
+  } else if (el.id === 'impfile') {
+    const file = el.files[0]; if (!file) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const j = JSON.parse(rd.result);
+        if (!j.entries || typeof j.entries !== 'object') throw 0;
+        if (!confirm('Загрузить копию? Текущие данные будут заменены.')) return;
+        S.entries = j.entries; S.settings = Object.assign(JSON.parse(JSON.stringify(DEF)), j.settings || {}); save(); toast('Копия загружена'); render();
+      } catch (err) { toast('Неверный файл'); }
+    };
+    rd.readAsText(file); el.value = '';
+  }
+});
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { checkReminders(); render(); } });
+
+/* ============ boot ============ */
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+nav('home');
+checkReminders();
+setInterval(checkReminders, 30000);
+</script>
+</body>
+</html>
